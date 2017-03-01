@@ -36,6 +36,7 @@ export interface CalendarProps {
   locale?: any;
   style?: React.CSSProperties;
   onPanelChange?: (date?: moment.Moment, mode?: CalendarMode) => void;
+  onSelect?: (date?: moment.Moment) => void;
 }
 
 export interface CalendarState {
@@ -49,6 +50,8 @@ export default class Calendar extends React.Component<CalendarProps, CalendarSta
     fullscreen: true,
     prefixCls: PREFIX_CLS,
     mode: 'month',
+    onSelect: noop,
+    onPanelChange: noop,
   };
 
   static propTypes = {
@@ -61,6 +64,7 @@ export default class Calendar extends React.Component<CalendarProps, CalendarSta
     style: PropTypes.object,
     onPanelChange: PropTypes.func,
     value: PropTypes.object,
+    onSelect: PropTypes.func,
   };
 
   static contextTypes = {
@@ -123,13 +127,16 @@ export default class Calendar extends React.Component<CalendarProps, CalendarSta
     );
   }
 
-  setValue = (value) => {
-    if (!('value' in this.props) && this.state.value !== value) {
+  setValue = (value, way: 'select' | 'changePanel') => {
+    if (!('value' in this.props)) {
       this.setState({ value });
     }
-    const onPanelChange = this.props.onPanelChange;
-    if (onPanelChange) {
-      onPanelChange(value, this.state.mode);
+    if (way === 'select') {
+      if (this.props.onSelect) {
+        this.props.onSelect(value);
+      }
+    } else if (way === 'changePanel') {
+      this.onPanelChange(value, this.state.mode);
     }
   }
 
@@ -137,11 +144,27 @@ export default class Calendar extends React.Component<CalendarProps, CalendarSta
     const mode = (type === 'date') ? 'month' : 'year';
     if (this.state.mode !== mode) {
       this.setState({ mode });
-      const onPanelChange = this.props.onPanelChange;
-      if (onPanelChange) {
-        onPanelChange(this.state.value, mode);
-      }
+      this.onPanelChange(this.state.value, mode);
     }
+  }
+
+  onHeaderValueChange = (value) => {
+    this.setValue(value, 'changePanel');
+  }
+
+  onHeaderTypeChange = (type) => {
+    this.setType(type);
+  }
+
+  onPanelChange(value, mode) {
+    const { onPanelChange } = this.props;
+    if (onPanelChange) {
+      onPanelChange(value, mode);
+    }
+  }
+
+  onSelect = (value) => {
+    this.setValue(value, 'select');
   }
 
   render() {
@@ -168,8 +191,8 @@ export default class Calendar extends React.Component<CalendarProps, CalendarSta
           value={value}
           locale={locale.lang}
           prefixCls={prefixCls}
-          onTypeChange={this.setType}
-          onValueChange={this.setValue}
+          onTypeChange={this.onHeaderTypeChange}
+          onValueChange={this.onHeaderValueChange}
         />
         <FullCalendar
           {...props}
@@ -181,6 +204,7 @@ export default class Calendar extends React.Component<CalendarProps, CalendarSta
           value={value}
           monthCellRender={this.monthCellRender}
           dateCellRender={this.dateCellRender}
+          onSelect={this.onSelect}
         />
       </div>
     );

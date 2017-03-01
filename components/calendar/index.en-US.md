@@ -26,6 +26,7 @@ moment.locale('zh-cn');
   dateCellRender={dateCellRender}
   monthCellRender={monthCellRender}
   onPanelChange={onPanelChange}
+  onSelect={onSelect}
 />
 ```
 
@@ -38,4 +39,5 @@ moment.locale('zh-cn');
 | dateCellRender     | to set the way of renderer the date cell | function(date: moment): ReactNode | - |
 | monthCellRender    | to set the way of renderer the month cell | function(date: moment): ReactNode | - |
 | locale       | set locale | object   | [default](https://github.com/ant-design/ant-design/blob/master/components/date-picker/locale/example.json)  |
-| onPanelChange| the callback when panel change | function(date: moment, mode: string) | - |
+| onPanelChange| callback when panel change | function(date: moment, mode: string) | - |
+| onSelect     | callback when select date  | function(date: moment）              | - |
